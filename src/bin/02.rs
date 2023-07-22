@@ -18,6 +18,31 @@ pub fn part_one(input: &str) -> Option<u32> {
 ///   X means you must lose
 ///   Y means you must draw
 ///   Z means you must win
+pub fn part_two(input: &str) -> Option<u32> {
+    let rounds = input.trim_end().split('\n');
+    Some(rounds.map(play_round_part_two).sum())
+}
+
+pub fn play_round(input: &str) -> u32 {
+    let my_move = to_rock_paper_scissors(&input.chars().nth(2).unwrap());
+    let their_move = to_rock_paper_scissors(&input.chars().nth(0).unwrap());
+    rock_paper_scissors(&my_move, &their_move) + moves_to_score(&my_move)
+}
+
+pub fn play_round_part_two(input: &str) -> u32 {
+    let their_move = to_rock_paper_scissors(&input.chars().nth(0).unwrap());
+    let which_outcome = to_outcome(&input.chars().nth(2).unwrap());
+
+    let possible_moves = move_set(&their_move);
+    let my_move = get_move(possible_moves, which_outcome);
+
+    rock_paper_scissors(&my_move, &their_move) + moves_to_score(&my_move)
+}
+
+//
+// Types
+//
+
 #[derive(Debug, PartialEq)]
 pub enum Moves {
     Rock,
@@ -32,27 +57,9 @@ pub enum Outcome {
     Win,
 }
 
-pub fn rock_paper_scissors(us: &Moves, them: &Moves) -> u32 {
-    match (us, them) {
-        (Moves::Rock, Moves::Rock) => 3,
-        (Moves::Rock, Moves::Paper) => 0,
-        (Moves::Rock, Moves::Scissors) => 6,
-        (Moves::Paper, Moves::Rock) => 6,
-        (Moves::Paper, Moves::Paper) => 3,
-        (Moves::Paper, Moves::Scissors) => 0,
-        (Moves::Scissors, Moves::Rock) => 0,
-        (Moves::Scissors, Moves::Paper) => 6,
-        (Moves::Scissors, Moves::Scissors) => 3,
-    }
-}
-
-pub fn moves_to_score(my_move: &Moves) -> u32 {
-    match my_move {
-        Moves::Rock => 1,
-        Moves::Paper => 2,
-        Moves::Scissors => 3,
-    }
-}
+//
+// Conversions
+//
 
 fn to_rock_paper_scissors(c: &char) -> Moves {
     match c {
@@ -75,15 +82,12 @@ fn to_outcome(c: &char) -> Outcome {
     }
 }
 
-pub fn play_round(input: &str) -> u32 {
-    let my_move = to_rock_paper_scissors(&input.chars().nth(2).unwrap());
-    let their_move = to_rock_paper_scissors(&input.chars().nth(0).unwrap());
-    rock_paper_scissors(&my_move, &their_move) + moves_to_score(&my_move)
-}
-
-pub fn part_two(input: &str) -> Option<u32> {
-    let rounds = input.trim_end().split('\n');
-    Some(rounds.map(play_round_part_two).sum())
+pub fn moves_to_score(my_move: &Moves) -> u32 {
+    match my_move {
+        Moves::Rock => 1,
+        Moves::Paper => 2,
+        Moves::Scissors => 3,
+    }
 }
 
 /// Given an opponent's move, returns a 3-tuple of
@@ -96,6 +100,10 @@ pub fn move_set(opponent: &Moves) -> (Moves, Moves, Moves) {
     }
 }
 
+//
+// Scoring
+//
+
 pub fn get_move(possible_moves: (Moves, Moves, Moves), outcome: Outcome) -> Moves {
     match outcome {
         Outcome::Lose => possible_moves.0,
@@ -104,14 +112,18 @@ pub fn get_move(possible_moves: (Moves, Moves, Moves), outcome: Outcome) -> Move
     }
 }
 
-pub fn play_round_part_two(input: &str) -> u32 {
-    let their_move = to_rock_paper_scissors(&input.chars().nth(0).unwrap());
-    let which_outcome = to_outcome(&input.chars().nth(2).unwrap());
-
-    let possible_moves = move_set(&their_move);
-    let my_move = get_move(possible_moves, which_outcome);
-
-    rock_paper_scissors(&my_move, &their_move) + moves_to_score(&my_move)
+pub fn rock_paper_scissors(us: &Moves, them: &Moves) -> u32 {
+    match (us, them) {
+        (Moves::Rock, Moves::Rock) => 3,
+        (Moves::Rock, Moves::Paper) => 0,
+        (Moves::Rock, Moves::Scissors) => 6,
+        (Moves::Paper, Moves::Rock) => 6,
+        (Moves::Paper, Moves::Paper) => 3,
+        (Moves::Paper, Moves::Scissors) => 0,
+        (Moves::Scissors, Moves::Rock) => 0,
+        (Moves::Scissors, Moves::Paper) => 6,
+        (Moves::Scissors, Moves::Scissors) => 3,
+    }
 }
 
 fn main() {
