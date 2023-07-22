@@ -1,3 +1,5 @@
+use itertools::{rev, sorted};
+
 /// Find the elf carrying the most calories; how much are they carrying?
 pub fn part_one(input: &str) -> Option<u32> {
     let elves = input.trim_end().split("\n\n");
@@ -12,7 +14,9 @@ pub fn sum_elf(input: &str) -> u32 {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    None
+    let elves = input.trim_end().split("\n\n");
+
+    Some(rev(sorted(elves.map(sum_elf))).take(3).sum())
 }
 
 fn main() {
@@ -40,6 +44,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = advent_of_code::read_file("examples", 1);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(45000));
     }
 }
