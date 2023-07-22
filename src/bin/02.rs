@@ -13,11 +13,23 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(rounds.map(play_round).sum())
 }
 
+/// Wise elf says...
+///  Actually I lied about what your move means!
+///   X means you must lose
+///   Y means you must draw
+///   Z means you must win
 #[derive(Debug, PartialEq)]
 pub enum Moves {
     Rock,
     Paper,
     Scissors,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum Outcome {
+    Lose,
+    Draw,
+    Win,
 }
 
 pub fn rock_paper_scissors(us: &Moves, them: &Moves) -> u32 {
@@ -54,6 +66,15 @@ fn to_rock_paper_scissors(c: &char) -> Moves {
     }
 }
 
+fn to_outcome(c: &char) -> Outcome {
+    match c {
+        'X' => Outcome::Lose,
+        'Y' => Outcome::Draw,
+        'Z' => Outcome::Win,
+        _ => panic!("Invalid Rock Paper Scissors outcome!"),
+    }
+}
+
 pub fn play_round(input: &str) -> u32 {
     let my_move = to_rock_paper_scissors(&input.chars().nth(2).unwrap());
     let their_move = to_rock_paper_scissors(&input.chars().nth(0).unwrap());
@@ -61,7 +82,36 @@ pub fn play_round(input: &str) -> u32 {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    None
+    let rounds = input.trim_end().split('\n');
+    Some(rounds.map(play_round_part_two).sum())
+}
+
+/// Given an opponent's move, returns a 3-tuple of
+/// (losing_move, draw_move, winning_move)
+pub fn move_set(opponent: &Moves) -> (Moves, Moves, Moves) {
+    match opponent {
+        Moves::Rock => (Moves::Scissors, Moves::Rock, Moves::Paper),
+        Moves::Paper => (Moves::Rock, Moves::Paper, Moves::Scissors),
+        Moves::Scissors => (Moves::Paper, Moves::Scissors, Moves::Rock),
+    }
+}
+
+pub fn get_move(possible_moves: (Moves, Moves, Moves), outcome: Outcome) -> Moves {
+    match outcome {
+        Outcome::Lose => possible_moves.0,
+        Outcome::Draw => possible_moves.1,
+        Outcome::Win => possible_moves.2,
+    }
+}
+
+pub fn play_round_part_two(input: &str) -> u32 {
+    let their_move = to_rock_paper_scissors(&input.chars().nth(0).unwrap());
+    let which_outcome = to_outcome(&input.chars().nth(2).unwrap());
+
+    let possible_moves = move_set(&their_move);
+    let my_move = get_move(possible_moves, which_outcome);
+
+    rock_paper_scissors(&my_move, &their_move) + moves_to_score(&my_move)
 }
 
 fn main() {
@@ -113,6 +163,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = advent_of_code::read_file("examples", 2);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(12));
     }
 }
