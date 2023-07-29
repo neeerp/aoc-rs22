@@ -29,7 +29,26 @@ pub fn to_priority(c: char) -> usize {
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
-    None
+    let mut rucksacks = input.trim_end().split('\n').peekable();
+    let mut result = 0;
+    while rucksacks.peek() != None {
+        let one = rucksacks.next().unwrap();
+        let two = rucksacks.next().unwrap();
+        let three = rucksacks.next().unwrap();
+
+        result += to_priority(find_in_three(one, two, three))
+    }
+
+    Some(result)
+}
+
+pub fn find_in_three<'a>(one: &'a str, two: &'a str, three: &'a str) -> char {
+    let one_set: HashSet<char> = one.chars().collect();
+    let two_set: HashSet<char> = two.chars().collect();
+    let three_set: HashSet<char> = three.chars().collect();
+
+    let one_two_set: HashSet<char> = one_set.intersection(&two_set).copied().collect();
+    one_two_set.intersection(&three_set).last().unwrap().clone()
 }
 
 fn main() {
@@ -41,6 +60,28 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn find_in_three_single() {
+        assert_eq!(find_in_three("a", "a", "a"), 'a');
+    }
+
+    #[test]
+    fn find_in_three_simple() {
+        assert_eq!(find_in_three("abc", "cde", "cfg"), 'c');
+    }
+
+    #[test]
+    fn find_in_three_complex() {
+        assert_eq!(
+            find_in_three(
+                "vJrwpWtwJgWrhcsFMMfFFhFp",
+                "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL",
+                "PmmdzqPrVvPwwTWBwg"
+            ),
+            'r'
+        );
+    }
 
     #[test]
     fn find_in_both_single() {
@@ -78,6 +119,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = advent_of_code::read_file("examples", 3);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(70));
     }
 }
