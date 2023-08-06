@@ -71,19 +71,29 @@ pub fn parse_instruction(instruction: &str) -> Instruction {
     }
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<String> {
+    let mut parts = input.trim_end().split("\n\n");
+
+    let mut stacks = read_map(parts.next().unwrap());
+    parts
+        .next()
+        .unwrap()
+        .split('\n')
+        .for_each(|instruction| apply_improved_instruction(instruction, &mut stacks));
+
+    Some(stacks.iter().map(|s| s.last().unwrap()).collect::<String>())
 }
 
-pub fn get_last_line(input: &str) -> String {
-    String::from(input.split('\n').last().unwrap())
-}
+pub fn apply_improved_instruction(instruction: &str, stacks: &mut Vec<Vec<char>>) {
+    let instruction = parse_instruction(instruction);
+    let mut holding = vec![];
 
-pub fn get_num_cols(input: &str) -> usize {
-    let re = Regex::new(r"(\d+)[[:space:]]*$").unwrap();
+    for _ in 0..instruction.qty {
+        holding.push(stacks.get_mut(instruction.from).unwrap().pop().unwrap());
+    }
 
-    let caps = re.captures(input).unwrap();
-    caps[1].parse().unwrap()
+    let to = stacks.get_mut(instruction.to).unwrap();
+    holding.iter().rev().for_each(|e| to.push(e.clone()));
 }
 
 fn main() {
@@ -109,27 +119,14 @@ mod tests {
     }
 
     #[test]
-    fn test_get_num_cols() {
-        assert_eq!(get_num_cols("1 2 3 4 5 6 7 8 9 10"), 10);
-    }
-
-    #[test]
-    fn test_get_last_line() {
-        let input = "abc\ndef\nghi";
-        assert_eq!(get_last_line(&input), String::from("ghi"));
-    }
-
-    #[test]
-    // #[ignore]
     fn test_part_one() {
         let input = advent_of_code::read_file("examples", 5);
         assert_eq!(part_one(&input), Some(String::from("CMZ")));
     }
 
     #[test]
-    #[ignore]
     fn test_part_two() {
         let input = advent_of_code::read_file("examples", 5);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(String::from("MCD")));
     }
 }
