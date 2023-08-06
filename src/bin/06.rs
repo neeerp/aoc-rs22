@@ -18,8 +18,18 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(offset)
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<u32> {
+    let (offset, _) = input
+        .as_bytes()
+        .windows(14)
+        .fold((14, false), |(offset, found), window| {
+            match (found, window) {
+                (true, _) => (offset, true),
+                (false, window) if window.iter().all_unique() => (offset, true),
+                (_, _) => (offset + 1, false),
+            }
+        });
+    Some(offset)
 }
 
 fn main() {
@@ -41,6 +51,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = advent_of_code::read_file("examples", 6);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(19));
     }
 }
