@@ -71,7 +71,20 @@ pub fn execute_ls(
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    None
+    let all_dirs = execute(input.trim_end());
+
+    let mut root = all_dirs.get(&PathBuf::from("/")).unwrap().borrow_mut();
+    let directory_sizes = root.resolve(&all_dirs);
+
+    let space_available = 70_000_000 - root.size;
+
+    Some(
+        *directory_sizes
+            .iter()
+            .filter(|s| space_available + **s > 30_000_000)
+            .min()
+            .unwrap(),
+    )
 }
 
 #[derive(Debug, PartialEq)]
@@ -220,7 +233,6 @@ mod tests {
     }
 
     #[test]
-    // #[ignore]
     fn test_part_one() {
         let input = advent_of_code::read_file("examples", 7);
         assert_eq!(part_one(&input), Some(95_437));
@@ -229,6 +241,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = advent_of_code::read_file("examples", 7);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(24933642));
     }
 }
